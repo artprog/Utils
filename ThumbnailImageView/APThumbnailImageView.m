@@ -1,9 +1,9 @@
 //
 //  APThumbnailImageView.m
-//  tmp
+//  Utils
 //
 //  Created by Adam Zugaj on 11-07-08.
-//  Copyright 2011 SMTSoftware. All rights reserved.
+//  Copyright 2011 ArtProg. All rights reserved.
 //
 
 #import "APThumbnailImageView.h"
@@ -11,12 +11,12 @@
 static const CGFloat _thumbnailImageViewWidth = 216;
 static const CGFloat _thumbnailImageViewMargin = 30;
 
-@interface ThumbnailImageView ()
+@interface APThumbnailImageView ()
 - (CGPoint)firstThumbnailImageOffset;
 - (CGFloat)rowHeight;
 @end
 
-@implementation ThumbnailImageView
+@implementation APThumbnailImageView
 
 - (void)layoutSubviews
 {

@@ -1,18 +1,15 @@
 //
 //  APThumbnailImageView.h
-//  tmp
+//  Utils
 //
 //  Created by Adam Zugaj on 11-07-08.
-//  Copyright 2011 SMTSoftware. All rights reserved.
+//  Copyright 2011 ArtProg. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 #import "APHorizontalTableView.h"
 
-@interface ThumbnailImageView : APHorizontalTableView
-{
-    
-}
+@interface APThumbnailImageView : APHorizontalTableView
 
 - (NSUInteger)numberOfColumns;
 - (NSUInteger)numberOfRows;

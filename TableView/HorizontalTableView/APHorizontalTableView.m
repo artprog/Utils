@@ -1,9 +1,9 @@
 //
 //  APHorizontalTableView.m
-//  tmp
+//  Utils
 //
 //  Created by Adam Zugaj on 11-07-08.
-//  Copyright 2011 SMTSoftware. All rights reserved.
+//  Copyright 2011 ArtProg. All rights reserved.
 //
 
 #import "APHorizontalTableView.h"
@@ -29,6 +29,8 @@
 	{
 		_queuedCells = [[NSMutableDictionary alloc] init];
 		_visibleCells = [[NSMutableDictionary alloc] init];
+		
+		self.backgroundColor = [UIColor blackColor];
 	}
 	return self;
 }
