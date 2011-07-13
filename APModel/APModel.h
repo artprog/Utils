@@ -19,5 +19,6 @@
 - (void)cancel;
 - (BOOL)isLoading;
 - (BOOL)isLoaded;
+- (BOOL)isOutdated;
 
 @end

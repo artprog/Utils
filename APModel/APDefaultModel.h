@@ -14,4 +14,6 @@
 	NSMutableArray *_items;
 }
 
+- (void)didFinishLoad;
+
 @end

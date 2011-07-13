@@ -8,6 +8,7 @@
 
 #import "APDefaultModel.h"
 #import "NSMutableArray+APUtils.h"
+#import "NSArray+APUtils.h"
 
 @implementation APDefaultModel
 
@@ -30,6 +31,14 @@
 	
 	[super dealloc];
 }
+
+- (void)didFinishLoad
+{
+	[_delegates performSelectorOnMainThread:@selector(modelDidFinishLoad:) withObjects:self, nil];
+}
+
+#pragma mark -
+#pragma mark APModel
 
 - (void)addDelegate:(id<APModelDelegate>)delegate
 {
@@ -60,8 +69,14 @@
 	return NO;
 }
 
+- (BOOL)isOutdated
+{
+	return YES;
+}
+
 - (void)load
 {
+	[self didFinishLoad];
 }
 
 - (void)cancel
