@@ -16,10 +16,8 @@
 {
     @private
 	APImageTableView *_imageTableView;
-	//id<APImageTableViewDataSource> _dataSource;
 }
 
 @property (nonatomic, retain) APImageTableView *imageTableView;
-//@property (nonatomic, assign) id<APImageTableViewDataSource> dataSource;
 
 @end

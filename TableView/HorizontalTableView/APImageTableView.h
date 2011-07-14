@@ -9,24 +9,24 @@
 @class APImageTableViewCell;
 
 @protocol APImageTableViewDataSource;
+@protocol APImageTableViewDelegate;
 
 @interface APImageTableView : UIScrollView <UIScrollViewDelegate>
 {
 	@private
     id<APImageTableViewDataSource> _dataSource;
-	//id<UITableViewDelegate> _tableDelegate;
+	id<APImageTableViewDelegate> _tableDelegate;
 	NSMutableDictionary *_queuedCells;
 	NSMutableDictionary *_visibleCells;
 	CGSize _cellSize;
-	@protected
 	NSUInteger _maxNumberOfColumns;
 	NSUInteger _maxNumberOfRows;
 	NSUInteger _numberOfCells;
-	CGPoint _firstVisibleCell;
-	CGPoint _lastVisibleCell;
+	NSUInteger _firstVisibleCell;
+	NSUInteger _lastVisibleCell;
 }
 
-//@property (nonatomic, assign) id<UITableViewDelegate> delegate;
+@property (nonatomic, assign) id<APImageTableViewDelegate> delegate;
 @property (nonatomic, assign) id<APImageTableViewDataSource> dataSource;
 @property (nonatomic) NSUInteger maxNumberOfColumns;
 @property (nonatomic) NSUInteger maxNumberOfRows;
@@ -37,7 +37,7 @@
 
 - (APImageTableViewCell*)dequeueReusableCellWithIdentifier:(NSString*)identifier;
 - (NSUInteger)numberOfCells;
-- (APImageTableViewCell*)cellAtPoint:(CGPoint)point;
+- (APImageTableViewCell*)cellAtIndex:(NSUInteger)index;
 
 - (void)reloadData;
 

@@ -10,6 +10,6 @@
 @class APImageTableView;
 
 @protocol APImageTableViewDataSource <NSObject>
-- (APImageTableViewCell*)imageTableView:(APImageTableView*)tableView cellAtPoint:(CGPoint)point;
+- (APImageTableViewCell*)imageTableView:(APImageTableView*)tableView cellAtIndex:(NSUInteger)index;
 - (NSUInteger)imageTableViewNumberOfCells:(APImageTableView*)tableView;
 @end
