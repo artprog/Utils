@@ -227,6 +227,11 @@
 {
 	if ( sender.state == UIGestureRecognizerStateRecognized )
 	{
+		if ( [_tableDelegate respondsToSelector:@selector(imageTableViewDidTap:)] )
+		{
+			[_tableDelegate imageTableViewDidTap:self];
+		}
+		
 		CGPoint location = [sender locationInView:self];
 		UIView *view;
 		NSArray *viewKeys = [_visibleCells allKeys];

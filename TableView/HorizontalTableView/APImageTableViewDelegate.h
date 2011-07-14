@@ -12,4 +12,5 @@
 @optional
 - (void)imageTableView:(APImageTableView*)tableView didClickCellAtIndex:(NSUInteger)index;
 - (void)imageTableViewDidScroll:(APImageTableView*)tableView;
+- (void)imageTableViewDidTap:(APImageTableView*)tableView;
 @end
