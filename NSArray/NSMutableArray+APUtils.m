@@ -18,7 +18,7 @@
 + (NSMutableArray*)nonRetainingArrayWithCapacity:(NSInteger)capacity
 {
 	CFArrayCallBacks callbacks = {0, NULL, NULL, CFCopyDescription, CFEqual};
-    return (id)(CFArrayCreateMutable(0, capacity, &callbacks));
+    return [(id)(CFArrayCreateMutable(0, capacity, &callbacks)) autorelease];
 }
 
 @end

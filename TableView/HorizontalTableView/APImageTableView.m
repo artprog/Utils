@@ -10,12 +10,14 @@
 #import "APImageTableViewCell.h"
 #import "APImageTableViewDataSource.h"
 #import "APImageTableViewDelegate.h"
+#import "NSObject+APUtils.h"
 
 @interface APImageTableView ()
 - (CGRect)frameForCellAtIndex:(NSUInteger)index;
 - (NSInteger)cellIndexAtPoint:(CGPoint)point;
 - (NSUInteger)calculateFirstVisibleCell;
 - (NSUInteger)calculateLastVisibleCell;
+- (NSUInteger)calculateCurrentPage;
 - (void)queueReusableCells;
 - (void)displayCellAtIndex:(NSUInteger)index;
 - (void)userDidTap:(UIGestureRecognizer*)sender;
@@ -28,6 +30,7 @@
 @synthesize maxNumberOfRows = _maxNumberOfRows;
 @synthesize maxNumberOfColumns = _maxNumberOfColumns;
 @synthesize cellSize = _cellSize;
+@synthesize currentPage = _currentPage;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -47,6 +50,9 @@
 		tapRecognizer.numberOfTapsRequired = 1;
 		tapRecognizer.numberOfTouchesRequired = 1;
 		[self addGestureRecognizer:tapRecognizer];
+		
+		_didScrollFirstTime = YES;
+		_currentPage = 0;
 	}
 	return self;
 }
@@ -67,7 +73,15 @@
 	
 	NSUInteger numberOfColumns = _numberOfCells<_maxNumberOfColumns?_numberOfCells:_maxNumberOfColumns;
 	NSUInteger numberOfRows = ceil(1.0*_numberOfCells/numberOfColumns);
-	self.contentSize = CGSizeMake(numberOfColumns*_cellSize.width, numberOfRows*_cellSize.height);
+	if ( self.pagingEnabled )
+	{
+		CGRect frame = self.bounds;
+		self.contentSize = CGSizeMake(numberOfColumns*frame.size.width, numberOfRows*frame.size.height);
+	}
+	else
+	{
+		self.contentSize = CGSizeMake(numberOfColumns*_cellSize.width, numberOfRows*_cellSize.height);
+	}
 	NSInteger insetTop = (self.bounds.size.height-self.contentSize.height)/2;
 	NSInteger insetLeft = (self.bounds.size.width-self.contentSize.width)/2;
 	self.contentInset = UIEdgeInsetsMake(insetTop<0?0:insetTop, insetLeft<0?0:insetLeft, insetTop<0?0:insetTop, insetLeft<0?0:insetLeft);
@@ -76,11 +90,14 @@
 	APImageTableViewCell *cell;
 	for (NSUInteger index=_firstVisibleCell; index<=_lastVisibleCell; ++index)
 	{
-		cell = [self cellAtIndex:index];
-		cellFrame = [self frameForCellAtIndex:index];
-		if ( !CGRectEqualToRect(cell.frame, cellFrame) )
+		cell = [_visibleCells objectForKey:[NSNumber numberWithUnsignedInteger:index]];
+		if ( cell )
 		{
-			cell.frame = cellFrame;
+			cellFrame = [self frameForCellAtIndex:index];
+			if ( !CGRectEqualToRect(cell.frame, cellFrame) )
+			{
+				cell.frame = cellFrame;
+			}
 		}
 	}
 }
@@ -131,6 +148,7 @@
 	_numberOfCells = [_dataSource imageTableViewNumberOfCells:self];
 	_firstVisibleCell = 0;
 	_lastVisibleCell = 0;
+	_didScrollFirstTime = YES;
 	[self scrollViewDidScroll:self];
 }
 
@@ -146,6 +164,31 @@
 	_maxNumberOfColumns = NSUIntegerMax;
 }
 
+- (void)setCurrentPage:(NSUInteger)currentPage
+{
+	_currentPage = currentPage;
+	CGPoint offset = self.contentOffset;
+	offset.x = _currentPage*self.bounds.size.width;
+	self.contentOffset = offset;
+}
+- (void)prepareToRotation
+{
+	[super setDelegate:nil];
+}
+
+- (void)willAnimateRotation
+{
+	if ( self.pagingEnabled )
+	{
+		self.currentPage = _currentPage;
+	}
+}
+
+- (void)didRotate
+{
+	[super setDelegate:self];
+}
+
 #pragma mark -
 #pragma mark APHorizontalTableView ()
 
@@ -153,13 +196,22 @@
 {
 	NSUInteger column = index%_maxNumberOfColumns;
 	NSUInteger row = floor(index/_maxNumberOfColumns);
-	return CGRectMake(_cellSize.width*column, _cellSize.height*row, _cellSize.width, _cellSize.height);
+	if ( self.pagingEnabled )
+	{
+		CGSize frameSize = self.bounds.size;
+		return CGRectMake(column*frameSize.width, row*frameSize.height, frameSize.width, frameSize.height);
+	}
+	else
+	{
+		return CGRectMake(_cellSize.width*column, _cellSize.height*row, _cellSize.width, _cellSize.height);
+	}
 }
 
 - (NSInteger)cellIndexAtPoint:(CGPoint)point
 {
-	NSInteger column = floor(point.x/_cellSize.width);
-	NSInteger row = floor(point.y/_cellSize.height);
+	CGSize frameSize = self.bounds.size;
+	NSInteger column = floor(point.x/(self.pagingEnabled?frameSize.width:_cellSize.width));
+	NSInteger row = floor(point.y/(self.pagingEnabled?frameSize.height:_cellSize.height));
 	column = MAX(column, 0);
 	column = MIN(column, _maxNumberOfColumns);
 	row = MAX(row, 0);
@@ -175,6 +227,17 @@
 - (NSUInteger)calculateFirstVisibleCell
 {
 	return [self cellIndexAtPoint:self.contentOffset];
+}
+
+- (NSUInteger)calculateCurrentPage
+{
+	if ( self.pagingEnabled )
+	{
+		CGPoint offset = self.contentOffset;
+		CGSize frameSize = self.bounds.size;
+		return ceil(1.0*offset.x/frameSize.width);
+	}
+	return 0;
 }
 
 - (NSUInteger)calculateLastVisibleCell
@@ -259,14 +322,24 @@
 {
 	NSUInteger firstVisibleCellTmp = [self calculateFirstVisibleCell];
 	NSUInteger lastVisibleCellTmp = [self calculateLastVisibleCell];
-	if ( _firstVisibleCell != firstVisibleCellTmp || _lastVisibleCell != lastVisibleCellTmp )
+	if ( _firstVisibleCell != firstVisibleCellTmp || _lastVisibleCell != lastVisibleCellTmp || _didScrollFirstTime )
 	{
+		_didScrollFirstTime = NO;
 		_firstVisibleCell = firstVisibleCellTmp;
 		_lastVisibleCell = lastVisibleCellTmp;
 		[self queueReusableCells];
 		for (NSUInteger index=_firstVisibleCell; index<=_lastVisibleCell; ++index)
 		{
 			[self displayCellAtIndex:index];
+		}
+	}
+	NSUInteger currentPageTmp = [self calculateCurrentPage];
+	if ( _currentPage != currentPageTmp )
+	{
+		_currentPage = currentPageTmp;
+		if ( [_tableDelegate respondsToSelector:@selector(imageTableView:currentPageDidChange:)] )
+		{
+			[_tableDelegate imageTableView:self currentPageDidChange:_currentPage];
 		}
 	}
 	if ( [_tableDelegate respondsToSelector:@selector(imageTableViewDidScroll:)] )

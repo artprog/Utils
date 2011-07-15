@@ -24,6 +24,8 @@
 	NSUInteger _numberOfCells;
 	NSUInteger _firstVisibleCell;
 	NSUInteger _lastVisibleCell;
+	BOOL _didScrollFirstTime;
+	NSUInteger _currentPage;
 }
 
 @property (nonatomic, assign) id<APImageTableViewDelegate> delegate;
@@ -31,6 +33,7 @@
 @property (nonatomic) NSUInteger maxNumberOfColumns;
 @property (nonatomic) NSUInteger maxNumberOfRows;
 @property (nonatomic) CGSize cellSize;
+@property (nonatomic) NSUInteger currentPage;
 
 // initialization
 - (id)initWithFrame:(CGRect)frame;
@@ -40,5 +43,9 @@
 - (APImageTableViewCell*)cellAtIndex:(NSUInteger)index;
 
 - (void)reloadData;
+
+- (void)prepareToRotation;
+- (void)willAnimateRotation;
+- (void)didRotate;
 
 @end
