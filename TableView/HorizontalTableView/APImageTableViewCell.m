@@ -31,4 +31,12 @@
 	[super dealloc];
 }
 
+- (void)didShow
+{
+}
+
+- (void)didHide
+{
+}
+
 @end

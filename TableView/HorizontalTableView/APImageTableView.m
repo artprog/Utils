@@ -226,7 +226,7 @@
 
 - (NSUInteger)calculateFirstVisibleCell
 {
-	return [self cellIndexAtPoint:self.contentOffset];
+	return MAX([self cellIndexAtPoint:self.contentOffset]-1, 0);
 }
 
 - (NSUInteger)calculateCurrentPage
@@ -244,7 +244,7 @@
 {
 	CGFloat contentOffsetX = self.contentOffset.x+self.bounds.size.width-1;
 	CGFloat contentOffsetY = self.contentOffset.y+self.bounds.size.height-1;
-	return [self cellIndexAtPoint:CGPointMake(contentOffsetX, contentOffsetY)];
+	return MIN([self cellIndexAtPoint:CGPointMake(contentOffsetX, contentOffsetY)]+1, _numberOfCells);
 }
 
 - (void)queueReusableCells
@@ -271,6 +271,11 @@
 				[cell removeFromSuperview];
 				DLOG(@"queued cells: %d", [queuedCells count]);
 				[_queuedCells setObject:queuedCells forKey:cell.reuseIdentifier];
+				[cell didHide];
+				if ( [_tableDelegate respondsToSelector:@selector(imageTableView:didHideCellAtIndex:)] )
+				{
+					[_tableDelegate imageTableView:self didHideCellAtIndex:cellIndex];
+				}
 			}
 		}
 	}
@@ -283,6 +288,12 @@
 	{
 		[self addSubview:cell];
 		[_visibleCells setObject:cell forKey:[NSNumber numberWithUnsignedInteger:index]];
+		[self layoutIfNeeded]; // usunac jak bedzie zamulac
+		[cell didShow];
+		if ( [_tableDelegate respondsToSelector:@selector(imageTableView:didShowCellAtIndex:)] )
+		{
+			[_tableDelegate imageTableView:self didShowCellAtIndex:index];
+		}
 	}
 }
 

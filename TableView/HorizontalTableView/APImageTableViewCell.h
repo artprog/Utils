@@ -21,4 +21,7 @@
 
 - (id)initWithReuseIdentifier:(NSString*)reuseIdentifier;
 
+- (void)didShow;
+- (void)didHide;
+
 @end
