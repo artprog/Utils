@@ -27,8 +27,6 @@
 
 @property (nonatomic, assign) id<APImageTableViewDelegate> delegate;
 @property (nonatomic, assign) id<APImageTableViewDataSource> dataSource;
-//@property (nonatomic) NSUInteger maxNumberOfColumns;
-//@property (nonatomic) NSUInteger maxNumberOfRows;
 @property (nonatomic) NSUInteger currentCell;
 
 // initialization
