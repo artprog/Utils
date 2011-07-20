@@ -6,14 +6,12 @@
 //  Copyright 2011 ArtProg. All rights reserved.
 //
 
-@class APImageTableView;
-
 @protocol APImageTableViewDelegate <NSObject>
 @optional
-- (void)imageTableView:(APImageTableView*)tableView didClickCellAtIndex:(NSUInteger)index;
-- (void)imageTableViewDidScroll:(APImageTableView*)tableView;
-- (void)imageTableViewDidTap:(APImageTableView*)tableView;
-- (void)imageTableView:(APImageTableView*)tableView currentPageDidChange:(NSUInteger)currentPage;
-- (void)imageTableView:(APImageTableView*)tableView didShowCellAtIndex:(NSUInteger)index;
-- (void)imageTableView:(APImageTableView*)tableView didHideCellAtIndex:(NSUInteger)index;
+- (void)imageTableView:(UIScrollView*)tableView didClickCellAtIndex:(NSUInteger)index;
+- (void)imageTableViewDidScroll:(UIScrollView*)tableView;
+- (void)imageTableViewDidTap:(UIScrollView*)tableView;
+- (void)imageTableView:(UIScrollView*)tableView currentPageDidChange:(NSUInteger)currentPage;
+- (void)imageTableView:(UIScrollView*)tableView didShowCellAtIndex:(NSUInteger)index;
+- (void)imageTableView:(UIScrollView*)tableView didHideCellAtIndex:(NSUInteger)index;
 @end

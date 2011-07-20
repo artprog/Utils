@@ -25,6 +25,7 @@
 {
 	CGRect frame = CGRectMake(0, 0, 320, 480);
 	self.view = [[[UIView alloc] initWithFrame:frame] autorelease];
+	self.view.backgroundColor = [UIColor clearColor];
 	self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
 }
 
