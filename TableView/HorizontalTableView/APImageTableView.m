@@ -104,7 +104,7 @@
 		if ( cell )
 		{
 			[cells removeObject:cell];
-			DLOG(@"queued cells: %d", [cells count]);
+			//DLOG(@"queued cells: %d", [cells count]);
 			[_queuedCells setObject:cells forKey:identifier];
 		}
 		return cell;
@@ -220,7 +220,7 @@
 
 - (NSUInteger)calculateLastVisibleRow
 {
-	NSUInteger currentRow = [self calculateCurrentRow]+ceil(self.bounds.size.height/_cellSize.height);
+	NSUInteger currentRow = [self calculateCurrentRow]+floor(self.bounds.size.height/_cellSize.height);
 	NSUInteger numberOfRows = floor(_numberOfCells/_numberOfColumns)+1;
 	return MIN((int)currentRow+1, numberOfRows);
 }
@@ -249,8 +249,9 @@
 				}
 				[queuedCells addObject:cell];
 				[cell removeFromSuperview];
-				DLOG(@"queued cells: %d", [queuedCells count]);
+				//DLOG(@"queued cells: %d", [queuedCells count]);
 				[_queuedCells setObject:queuedCells forKey:cell.reuseIdentifier];
+				DLOG(@"hide cell at index: %d", cellIndex);
 				[cell didHide];
 				if ( [_tableDelegate respondsToSelector:@selector(imageTableView:didHideCellAtIndex:)] )
 				{
@@ -272,6 +273,7 @@
 			[self addSubview:cell];
 			[_visibleCells setObject:cell forKey:[NSNumber numberWithUnsignedInteger:index]];
 			[self layoutIfNeeded]; // usunac jak bedzie zamulac
+			DLOG(@"display cell at index: %d", index);
 			[cell didShow];
 			if ( [_tableDelegate respondsToSelector:@selector(imageTableView:didShowCellAtIndex:)] )
 			{
