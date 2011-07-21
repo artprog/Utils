@@ -19,21 +19,18 @@
 	NSMutableDictionary *_queuedCells;
 	NSMutableDictionary *_visibleCells;
 	CGSize _cellSize;
-	NSUInteger _maxNumberOfColumns;
-	NSUInteger _maxNumberOfRows;
 	NSUInteger _numberOfCells;
-	NSUInteger _firstVisibleCell;
-	NSUInteger _lastVisibleCell;
+	NSUInteger _firstVisibleRow;
+	NSUInteger _lastVisibleRow;
 	BOOL _didScrollFirstTime;
-	NSUInteger _currentPage;
+	NSUInteger _numberOfColumns;
+	NSUInteger _currentRow;
 }
 
 @property (nonatomic, assign) id<APImageTableViewDelegate> delegate;
 @property (nonatomic, assign) id<APImageTableViewDataSource> dataSource;
-@property (nonatomic) NSUInteger maxNumberOfColumns;
-@property (nonatomic) NSUInteger maxNumberOfRows;
+@property (nonatomic) NSUInteger currentRow;
 @property (nonatomic) CGSize cellSize;
-@property (nonatomic) NSUInteger currentPage;
 
 // initialization
 - (id)initWithFrame:(CGRect)frame;

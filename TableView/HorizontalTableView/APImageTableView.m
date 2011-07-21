@@ -15,9 +15,9 @@
 @interface APImageTableView ()
 - (CGRect)frameForCellAtIndex:(NSUInteger)index;
 - (NSInteger)cellIndexAtPoint:(CGPoint)point;
-- (NSUInteger)calculateFirstVisibleCell;
-- (NSUInteger)calculateLastVisibleCell;
-- (NSUInteger)calculateCurrentPage;
+- (NSUInteger)calculateFirstVisibleRow;
+- (NSUInteger)calculateCurrentRow;
+- (NSUInteger)calculateLastVisibleRow;
 - (void)queueReusableCells;
 - (void)displayCellAtIndex:(NSUInteger)index;
 - (void)userDidTap:(UIGestureRecognizer*)sender;
@@ -27,10 +27,8 @@
 
 @synthesize delegate = _tableDelegate;
 @synthesize dataSource = _dataSource;
-@synthesize maxNumberOfRows = _maxNumberOfRows;
-@synthesize maxNumberOfColumns = _maxNumberOfColumns;
 @synthesize cellSize = _cellSize;
-@synthesize currentPage = _currentPage;
+@synthesize currentRow = _currentRow;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -39,9 +37,6 @@
 		_queuedCells = [[NSMutableDictionary alloc] init];
 		_visibleCells = [[NSMutableDictionary alloc] init];
 		_cellSize = CGSizeMake(256, 256);
-		
-		_maxNumberOfColumns = 3;
-		_maxNumberOfRows = NSUIntegerMax;
 		
 		self.backgroundColor = [UIColor blackColor];
 		[super setDelegate:self];
@@ -52,7 +47,9 @@
 		[self addGestureRecognizer:tapRecognizer];
 		
 		_didScrollFirstTime = YES;
-		_currentPage = 0;
+		_currentRow = 0;
+		_numberOfColumns = 0;
+		_numberOfCells = 0;
 	}
 	return self;
 }
@@ -71,24 +68,20 @@
 {
 	[super layoutSubviews];
 	
-	NSUInteger numberOfColumns = _numberOfCells<_maxNumberOfColumns?_numberOfCells:_maxNumberOfColumns;
-	NSUInteger numberOfRows = ceil(1.0*_numberOfCells/numberOfColumns);
-	if ( self.pagingEnabled )
-	{
-		CGRect frame = self.bounds;
-		self.contentSize = CGSizeMake(numberOfColumns*frame.size.width, numberOfRows*frame.size.height);
-	}
-	else
-	{
-		self.contentSize = CGSizeMake(numberOfColumns*_cellSize.width, numberOfRows*_cellSize.height);
-	}
+	CGRect frame = self.bounds;
+	_numberOfColumns = floor(frame.size.width/_cellSize.width);
+	NSUInteger numberOfRows = ceil(1.0*_numberOfCells/_numberOfColumns);
+	self.contentSize = CGSizeMake(_numberOfColumns*_cellSize.width, numberOfRows*_cellSize.height);
+	
 	NSInteger insetTop = (self.bounds.size.height-self.contentSize.height)/2;
 	NSInteger insetLeft = (self.bounds.size.width-self.contentSize.width)/2;
 	self.contentInset = UIEdgeInsetsMake(insetTop<0?0:insetTop, insetLeft<0?0:insetLeft, insetTop<0?0:insetTop, insetLeft<0?0:insetLeft);
 	
 	CGRect cellFrame;
 	APImageTableViewCell *cell;
-	for (NSUInteger index=_firstVisibleCell; index<=_lastVisibleCell; ++index)
+	NSUInteger firstVisibleCell = _firstVisibleRow*_numberOfColumns;
+	NSUInteger lastVisibleCell = _lastVisibleRow*_numberOfColumns+_numberOfColumns-1;
+	for (NSUInteger index=firstVisibleCell; index<=lastVisibleCell; ++index)
 	{
 		cell = [_visibleCells objectForKey:[NSNumber numberWithUnsignedInteger:index]];
 		if ( cell )
@@ -146,31 +139,12 @@
 	[_visibleCells removeAllObjects];
 	[_queuedCells removeAllObjects];
 	_numberOfCells = [_dataSource imageTableViewNumberOfCells:self];
-	_firstVisibleCell = 0;
-	_lastVisibleCell = 0;
+	_firstVisibleRow = 0;
+	_lastVisibleRow = 0;
 	_didScrollFirstTime = YES;
 	[self scrollViewDidScroll:self];
 }
 
-- (void)setMaxNumberOfColumns:(NSUInteger)maxNumberOfColumns
-{
-	_maxNumberOfColumns = maxNumberOfColumns;
-	_maxNumberOfRows = NSUIntegerMax;
-}
-
-- (void)setMaxNumberOfRows:(NSUInteger)maxNumberOfRows
-{
-	_maxNumberOfRows = maxNumberOfRows;
-	_maxNumberOfColumns = NSUIntegerMax;
-}
-
-- (void)setCurrentPage:(NSUInteger)currentPage
-{
-	_currentPage = currentPage;
-	CGPoint offset = self.contentOffset;
-	offset.x = _currentPage*self.bounds.size.width;
-	self.contentOffset = offset;
-}
 - (void)prepareToRotation
 {
 	[super setDelegate:nil];
@@ -178,10 +152,7 @@
 
 - (void)willAnimateRotation
 {
-	if ( self.pagingEnabled )
-	{
-		self.currentPage = _currentPage;
-	}
+	self.currentRow = _currentRow;
 }
 
 - (void)didRotate
@@ -189,22 +160,28 @@
 	[super setDelegate:self];
 }
 
+- (void)setCurrentRow:(NSUInteger)currentRow
+{
+	_currentRow = currentRow;
+	CGPoint offset = self.contentOffset;
+	offset.y = _currentRow*_cellSize.height;
+	NSUInteger maxContentOffsetY = self.contentSize.height-self.bounds.size.height;
+	if ( offset.y > maxContentOffsetY )
+	{
+		offset.y = maxContentOffsetY;
+	}
+	self.contentOffset = offset;
+	[self scrollViewDidScroll:self];
+}
+
 #pragma mark -
 #pragma mark APHorizontalTableView ()
 
 - (CGRect)frameForCellAtIndex:(NSUInteger)index
 {
-	NSUInteger column = index%_maxNumberOfColumns;
-	NSUInteger row = floor(index/_maxNumberOfColumns);
-	if ( self.pagingEnabled )
-	{
-		CGSize frameSize = self.bounds.size;
-		return CGRectMake(column*frameSize.width, row*frameSize.height, frameSize.width, frameSize.height);
-	}
-	else
-	{
-		return CGRectMake(_cellSize.width*column, _cellSize.height*row, _cellSize.width, _cellSize.height);
-	}
+	NSUInteger column = index%_numberOfColumns;
+	NSUInteger row = floor(index/_numberOfColumns);
+	return CGRectMake(_cellSize.width*column, _cellSize.height*row, _cellSize.width, _cellSize.height);
 }
 
 - (NSInteger)cellIndexAtPoint:(CGPoint)point
@@ -213,38 +190,39 @@
 	NSInteger column = floor(point.x/(self.pagingEnabled?frameSize.width:_cellSize.width));
 	NSInteger row = floor(point.y/(self.pagingEnabled?frameSize.height:_cellSize.height));
 	column = MAX(column, 0);
-	column = MIN(column, _maxNumberOfColumns);
+	column = MIN(column, _numberOfColumns);
 	row = MAX(row, 0);
-	row = MIN(row, _maxNumberOfRows);
-	NSUInteger numberOfColumns = _numberOfCells<_maxNumberOfColumns?_numberOfCells:_maxNumberOfColumns;
-	if ( _numberOfCells < _maxNumberOfColumns )
+	NSUInteger numberOfRows = floor(_numberOfCells/_numberOfColumns)+1;
+	row = MIN(row, numberOfRows);
+	NSUInteger numberOfColumns = _numberOfCells<_numberOfColumns?_numberOfCells:_numberOfColumns;
+	if ( _numberOfCells < _numberOfColumns )
 	{
 		row = 0;
 	}
 	return row*numberOfColumns+column;
 }
 
-- (NSUInteger)calculateFirstVisibleCell
+- (NSUInteger)calculateFirstVisibleRow
 {
-	return MAX([self cellIndexAtPoint:self.contentOffset]-1, 0);
+	NSUInteger currentRow = [self calculateCurrentRow];
+	return MAX((int)currentRow-1, 0);
 }
 
-- (NSUInteger)calculateCurrentPage
+- (NSUInteger)calculateCurrentRow
 {
-	if ( self.pagingEnabled )
-	{
-		CGPoint offset = self.contentOffset;
-		CGSize frameSize = self.bounds.size;
-		return ceil(1.0*offset.x/frameSize.width);
-	}
-	return 0;
+	CGPoint offset = self.contentOffset;
+	NSInteger rowIndex = floor((offset.y-_cellSize.height/2)/_cellSize.height)+1;
+	NSUInteger numberOfRows = floor(_numberOfCells/_numberOfColumns)+1;
+	rowIndex = MAX(rowIndex, 0);
+	rowIndex = MIN(rowIndex, numberOfRows);
+	return rowIndex;
 }
 
-- (NSUInteger)calculateLastVisibleCell
+- (NSUInteger)calculateLastVisibleRow
 {
-	CGFloat contentOffsetX = self.contentOffset.x+self.bounds.size.width-1;
-	CGFloat contentOffsetY = self.contentOffset.y+self.bounds.size.height-1;
-	return MIN([self cellIndexAtPoint:CGPointMake(contentOffsetX, contentOffsetY)]+1, _numberOfCells);
+	NSUInteger currentRow = [self calculateCurrentRow]+ceil(self.bounds.size.height/_cellSize.height);
+	NSUInteger numberOfRows = floor(_numberOfCells/_numberOfColumns)+1;
+	return MIN((int)currentRow+1, numberOfRows);
 }
 
 - (void)queueReusableCells
@@ -256,7 +234,9 @@
 	for (NSNumber *key in visibleCellKeys)
 	{
 		cellIndex = [key unsignedIntegerValue];
-		if ( cellIndex < _firstVisibleCell || cellIndex > _lastVisibleCell )
+		NSUInteger firstVisibleCell = _firstVisibleRow*_numberOfColumns;
+		NSUInteger lastVisibleCell = _lastVisibleRow*_numberOfColumns+_numberOfColumns-1;
+		if ( cellIndex < firstVisibleCell || cellIndex > lastVisibleCell )
 		{
 			cell = [_visibleCells objectForKey:key];
 			if ( cell )
@@ -283,16 +263,20 @@
 
 - (void)displayCellAtIndex:(NSUInteger)index
 {
-	APImageTableViewCell *cell = [self cellAtIndex:index];
-	if ( cell )
+	APImageTableViewCell *cell = [_visibleCells objectForKey:[NSNumber numberWithUnsignedInteger:index]];
+	if ( !cell )
 	{
-		[self addSubview:cell];
-		[_visibleCells setObject:cell forKey:[NSNumber numberWithUnsignedInteger:index]];
-		[self layoutIfNeeded]; // usunac jak bedzie zamulac
-		[cell didShow];
-		if ( [_tableDelegate respondsToSelector:@selector(imageTableView:didShowCellAtIndex:)] )
+		cell = [_dataSource imageTableView:self cellAtIndex:index];
+		if ( cell )
 		{
-			[_tableDelegate imageTableView:self didShowCellAtIndex:index];
+			[self addSubview:cell];
+			[_visibleCells setObject:cell forKey:[NSNumber numberWithUnsignedInteger:index]];
+			[self layoutIfNeeded]; // usunac jak bedzie zamulac
+			[cell didShow];
+			if ( [_tableDelegate respondsToSelector:@selector(imageTableView:didShowCellAtIndex:)] )
+			{
+				[_tableDelegate imageTableView:self didShowCellAtIndex:index];
+			}
 		}
 	}
 }
@@ -331,27 +315,30 @@
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView
 {
-	NSUInteger firstVisibleCellTmp = [self calculateFirstVisibleCell];
-	NSUInteger lastVisibleCellTmp = [self calculateLastVisibleCell];
-	if ( _firstVisibleCell != firstVisibleCellTmp || _lastVisibleCell != lastVisibleCellTmp || _didScrollFirstTime )
+	[self layoutIfNeeded];
+	NSUInteger firstVisibleRowTmp = [self calculateFirstVisibleRow];
+	NSUInteger lastVisibleRowTmp = [self calculateLastVisibleRow];
+	if ( _firstVisibleRow != firstVisibleRowTmp || _lastVisibleRow != lastVisibleRowTmp || _didScrollFirstTime )
 	{
 		_didScrollFirstTime = NO;
-		_firstVisibleCell = firstVisibleCellTmp;
-		_lastVisibleCell = lastVisibleCellTmp;
+		_firstVisibleRow = firstVisibleRowTmp;
+		_lastVisibleRow = lastVisibleRowTmp;
 		[self queueReusableCells];
-		for (NSUInteger index=_firstVisibleCell; index<=_lastVisibleCell; ++index)
+		NSUInteger firstVisibleCell = _firstVisibleRow*_numberOfColumns;
+		NSUInteger lastVisibleCell = _lastVisibleRow*_numberOfColumns+_numberOfColumns-1;
+		for (NSUInteger index=firstVisibleCell; index<=lastVisibleCell; ++index)
 		{
 			[self displayCellAtIndex:index];
 		}
 	}
-	NSUInteger currentPageTmp = [self calculateCurrentPage];
-	if ( _currentPage != currentPageTmp )
+	NSUInteger currentRowTmp = [self calculateCurrentRow];
+	if ( _currentRow != currentRowTmp )
 	{
-		_currentPage = currentPageTmp;
-		if ( [_tableDelegate respondsToSelector:@selector(imageTableView:currentPageDidChange:)] )
-		{
-			[_tableDelegate imageTableView:self currentPageDidChange:_currentPage];
-		}
+		_currentRow = currentRowTmp;
+//		if ( [_tableDelegate respondsToSelector:@selector(imageTableView:currentPageDidChange:)] )
+//		{
+//			[_tableDelegate imageTableView:self currentPageDidChange:_currentPage];
+//		}
 	}
 	if ( [_tableDelegate respondsToSelector:@selector(imageTableViewDidScroll:)] )
 	{
