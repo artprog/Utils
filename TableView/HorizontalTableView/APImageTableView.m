@@ -73,7 +73,7 @@
 	NSUInteger numberOfRows = ceil(1.0*_numberOfCells/_numberOfColumns);
 	self.contentSize = CGSizeMake(_numberOfColumns*_cellSize.width, numberOfRows*_cellSize.height);
 	
-	NSInteger insetTop = (self.bounds.size.height-self.contentSize.height)/2;
+	NSInteger insetTop = 0;//(self.bounds.size.height-self.contentSize.height)/2;
 	NSInteger insetLeft = (self.bounds.size.width-self.contentSize.width)/2;
 	self.contentInset = UIEdgeInsetsMake(insetTop<0?0:insetTop, insetLeft<0?0:insetLeft, insetTop<0?0:insetTop, insetLeft<0?0:insetLeft);
 	
