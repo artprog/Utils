@@ -16,6 +16,9 @@
 
 @implementation APAlertView
 
+@synthesize windowBackgroundColor = _windowBackgroundColor;
+@synthesize delegate = _delegate;
+
 - (id)init
 {
 	return [self initWithFrame:CGRectZero];
@@ -25,13 +28,18 @@
 {
 	if ( (self = [super initWithFrame:frame]) )
 	{
+        self.windowBackgroundColor = [UIColor clearColor];
+        self.backgroundColor = [UIColor clearColor];
+        _isVisible = NO;
 	}
 	return self;
 }
 
 - (void)dealloc
 {
-	DLOG(@"alert view dealloc", nil);
+    RELEASE(_windowBackgroundColor);
+    _delegate = nil;
+    
     [super dealloc];
 }
 
@@ -45,18 +53,21 @@
 		_alertWindow.backgroundColor = [UIColor clearColor];
 		_alertWindow.hidden = NO;
 		APAlertViewController *viewController = [[[APAlertViewController alloc] init] autorelease];
-		viewController.view.backgroundColor = [UIColor lightGrayColor];
-		viewController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+		viewController.view.backgroundColor = [UIColor clearColor];
+		UIView *translucentView = [[[UIView alloc] initWithFrame:viewController.view.bounds] autorelease];
+        translucentView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+        translucentView.backgroundColor = self.windowBackgroundColor;
+        [viewController.view addSubview:translucentView];
+        [self sizeToFit];
 		self.center = viewController.view.center;
 		self.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleBottomMargin;
 		[viewController.view addSubview:self];
 		_alertWindow.rootViewController = viewController;
 		[self popUpAnimation];
-		[self performSelector:@selector(hide) withObject:nil afterDelay:3];
 	}
 }
 
-- (void)hide
+- (void)dismissWithButtonAtIndex:(NSInteger)index
 {
 	if ( _isVisible )
 	{
@@ -68,10 +79,19 @@
 							 if ( finished )
 							 {
 								 _isVisible = NO;
+                                 if ( [_delegate respondsToSelector:@selector(alertView:didDismissWithButtonIndex:)] )
+                                 {
+                                     [_delegate alertView:self didDismissWithButtonIndex:index];
+                                 }
 								 RELEASE(_alertWindow);
 							 }
 						 }];
 	}
+}
+
+- (BOOL)isVisible
+{
+    return _isVisible;
 }
 
 #pragma mark -

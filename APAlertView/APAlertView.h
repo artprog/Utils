@@ -6,14 +6,27 @@
 //  Copyright 2011 ArtProg. All rights reserved.
 //
 
+@protocol APAlertViewDelegate;
+
 @interface APAlertView : UIView
 {
 	@private
 	UIWindow *_alertWindow;
 	BOOL _isVisible;
+    UIColor *_windowBackgroundColor;
+    id<APAlertViewDelegate> _delegate;
 }
 
-- (void)show;
-- (void)hide;
+@property (nonatomic, assign) id<APAlertViewDelegate> delegate;
+@property (nonatomic, retain) UIColor *windowBackgroundColor;
 
+- (void)show;
+- (void)dismissWithButtonAtIndex:(NSInteger)index;
+- (BOOL)isVisible;
+
+@end
+
+@protocol APAlertViewDelegate <NSObject>
+@optional
+- (void)alertView:(APAlertView*)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex;
 @end
