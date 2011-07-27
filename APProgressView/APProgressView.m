@@ -41,4 +41,10 @@
 	[_progressImage drawInRect:CGRectMake(rect.origin.x, rect.origin.y, filledWidth, rect.size.height)];
 }
 
+- (void)setProgress:(CGFloat)progress
+{
+	_progress = progress;
+	[self setNeedsDisplay];
+}
+
 @end
