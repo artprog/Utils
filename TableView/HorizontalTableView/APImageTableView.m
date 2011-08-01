@@ -91,6 +91,10 @@
 			{
 				cell.frame = cellFrame;
 			}
+			else
+			{
+				[cell setNeedsLayout];
+			}
 		}
 	}
 }
