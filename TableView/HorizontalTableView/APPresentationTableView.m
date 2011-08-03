@@ -142,6 +142,8 @@
 - (void)prepareToRotation
 {
 	[super setDelegate:nil];
+	APImageTableViewCell *cell = [self cellAtIndex:self.currentCell];
+	[cell prepareToRotation];
 }
 
 - (void)willAnimateRotation
@@ -149,11 +151,15 @@
 	if ( self.pagingEnabled )
 	{
 		self.currentCell = _currentCell;
+		APImageTableViewCell *cell = [self cellAtIndex:self.currentCell];
+		[cell willAnimateRotation];
 	}
 }
 
 - (void)didRotate
 {
+	APImageTableViewCell *cell = [self cellAtIndex:self.currentCell];
+	[cell didRotate];
 	[super setDelegate:self];
 }
 

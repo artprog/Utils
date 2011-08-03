@@ -24,4 +24,8 @@
 - (void)didShow;
 - (void)didHide;
 
+- (void)prepareToRotation;
+- (void)willAnimateRotation;
+- (void)didRotate;
+
 @end

@@ -39,4 +39,16 @@
 {
 }
 
+- (void)prepareToRotation
+{
+}
+
+- (void)willAnimateRotation
+{	
+}
+
+- (void)didRotate
+{	
+}
+
 @end
