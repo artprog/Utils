@@ -24,6 +24,8 @@
 - (void)dismissWithButtonAtIndex:(NSInteger)index;
 - (BOOL)isVisible;
 
+- (void)popUpAnimation;
+
 @end
 
 @protocol APAlertViewDelegate <NSObject>

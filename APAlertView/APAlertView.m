@@ -10,10 +10,6 @@
 #import <QuartzCore/QuartzCore.h>
 #import "APAlertViewController.h"
 
-@interface APAlertView ()
-- (void)popUpAnimation;
-@end
-
 @implementation APAlertView
 
 @synthesize windowBackgroundColor = _windowBackgroundColor;
@@ -93,9 +89,6 @@
 {
     return _isVisible;
 }
-
-#pragma mark -
-#pragma mark APAlertView ()
 
 - (void)popUpAnimation
 {
