@@ -44,7 +44,8 @@
 	if ( !_isVisible )
 	{
 		_isVisible = YES;
-		_alertWindow = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+		CGRect frame = [[UIScreen mainScreen] bounds];
+		_alertWindow = [[UIWindow alloc] initWithFrame:frame];
 		_alertWindow.windowLevel = UIWindowLevelAlert;
 		_alertWindow.backgroundColor = [UIColor clearColor];
 		_alertWindow.hidden = NO;
@@ -55,7 +56,8 @@
         translucentView.backgroundColor = self.windowBackgroundColor;
         [viewController.view addSubview:translucentView];
         [self sizeToFit];
-		self.center = viewController.view.center;
+		CGSize viewControllerSize = viewController.view.bounds.size;
+		self.center = CGPointMake((int)(viewControllerSize.width/2), (int)(viewControllerSize.height/2));
 		self.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleBottomMargin;
 		[viewController.view addSubview:self];
 		_alertWindow.rootViewController = viewController;
