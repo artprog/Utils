@@ -69,8 +69,8 @@
 	[super layoutSubviews];
 	
 	CGRect frame = self.bounds;
-	_numberOfColumns = floor(frame.size.width/_cellSize.width);
-	NSUInteger numberOfRows = ceil(1.0*_numberOfCells/_numberOfColumns);
+	_numberOfColumns = _cellSize.width>0?floor(frame.size.width/_cellSize.width):0;
+	NSUInteger numberOfRows = _numberOfColumns>0?ceil(1.0*_numberOfCells/_numberOfColumns):0;
 	self.contentSize = CGSizeMake(_numberOfColumns*_cellSize.width, numberOfRows*_cellSize.height);
 	
 	NSInteger insetTop = 0;//(self.bounds.size.height-self.contentSize.height)/2;
@@ -184,19 +184,21 @@
 - (CGRect)frameForCellAtIndex:(NSUInteger)index
 {
 	NSUInteger column = index%_numberOfColumns;
-	NSUInteger row = floor(index/_numberOfColumns);
+	NSUInteger row = _numberOfColumns>0?floor(index/_numberOfColumns):0;
 	return CGRectMake(_cellSize.width*column, _cellSize.height*row, _cellSize.width, _cellSize.height);
 }
 
 - (NSInteger)cellIndexAtPoint:(CGPoint)point
 {
 	CGSize frameSize = self.bounds.size;
-	NSInteger column = floor(point.x/(self.pagingEnabled?frameSize.width:_cellSize.width));
-	NSInteger row = floor(point.y/(self.pagingEnabled?frameSize.height:_cellSize.height));
+	CGFloat cellWidth = self.pagingEnabled?frameSize.width:_cellSize.width;
+	NSInteger column = cellWidth>0?floor(point.x/cellWidth):0;
+	CGFloat cellHeight = self.pagingEnabled?frameSize.height:_cellSize.height;
+	NSInteger row = cellHeight>0?floor(point.y/cellHeight):0;
 	column = MAX(column, 0);
 	column = MIN(column, _numberOfColumns);
 	row = MAX(row, 0);
-	NSUInteger numberOfRows = floor(_numberOfCells/_numberOfColumns)+1;
+	NSUInteger numberOfRows = _numberOfColumns>0?(floor(_numberOfCells/_numberOfColumns)+1):0;
 	row = MIN(row, numberOfRows);
 	NSUInteger numberOfColumns = _numberOfCells<_numberOfColumns?_numberOfCells:_numberOfColumns;
 	if ( _numberOfCells < _numberOfColumns )
@@ -215,8 +217,8 @@
 - (NSUInteger)calculateCurrentRow
 {
 	CGPoint offset = self.contentOffset;
-	NSInteger rowIndex = floor((offset.y-_cellSize.height/2)/_cellSize.height)+1;
-	NSUInteger numberOfRows = floor(_numberOfCells/_numberOfColumns)+1;
+	NSInteger rowIndex = _cellSize.height>0?(floor((offset.y-_cellSize.height/2)/_cellSize.height)+1):0;
+	NSUInteger numberOfRows = _numberOfColumns>0?(floor(_numberOfCells/_numberOfColumns)+1):0;
 	rowIndex = MAX(rowIndex, 0);
 	rowIndex = MIN(rowIndex, numberOfRows);
 	return rowIndex;
@@ -224,8 +226,8 @@
 
 - (NSUInteger)calculateLastVisibleRow
 {
-	NSUInteger currentRow = [self calculateCurrentRow]+floor(self.bounds.size.height/_cellSize.height);
-	NSUInteger numberOfRows = floor(_numberOfCells/_numberOfColumns)+1;
+	NSUInteger currentRow = [self calculateCurrentRow]+(_cellSize.height>0?floor(self.bounds.size.height/_cellSize.height):0);
+	NSUInteger numberOfRows = _numberOfColumns>0?(floor(_numberOfCells/_numberOfColumns)+1):0;
 	return MIN((int)currentRow+1, numberOfRows);
 }
 
