@@ -9,6 +9,7 @@
 #import "APDefaultModel.h"
 #import "NSMutableArray+APUtils.h"
 #import "NSArray+APUtils.h"
+#import "APModelDelegate.h"
 
 @implementation APDefaultModel
 
@@ -32,9 +33,19 @@
 	[super dealloc];
 }
 
+- (void)didStartLoad
+{
+	[_delegates performSelectorOnMainThread:@selector(modelDidStartLoad:) withObjects:self, nil];
+}
+
 - (void)didFinishLoad
 {
 	[_delegates performSelectorOnMainThread:@selector(modelDidFinishLoad:) withObjects:self, nil];
+}
+
+- (void)didFailLoadWithError:(NSError*)error
+{
+	[_delegates performSelectorOnMainThread:@selector(model:didFailLoadWithError:) withObjects:self, error, nil];
 }
 
 #pragma mark -

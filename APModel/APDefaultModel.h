@@ -14,6 +14,8 @@
 	NSMutableArray *_items;
 }
 
+- (void)didStartLoad;
 - (void)didFinishLoad;
+- (void)didFailLoadWithError:(NSError*)error;
 
 @end
