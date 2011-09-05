@@ -3,7 +3,7 @@
 //  Presentations
 //
 //  Created by Adam Zugaj on 11-07-11.
-//  Copyright 2011 SMTSoftware. All rights reserved.
+//  Copyright 2011 ArtProg. All rights reserved.
 //
 
 #import "APDefaultModel.h"
