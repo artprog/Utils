@@ -2,8 +2,8 @@
 //  APTableViewCell.m
 //  Roessli
 //
-//  Created by SMT Software on 20.11.2011.
-//  Copyright (c) 2011 SMTSoftware. All rights reserved.
+//  Created by Adam Zugaj on 20.11.2011.
+//  Copyright (c) 2011 ArtProg. All rights reserved.
 //
 
 #import "APTableViewCell.h"
