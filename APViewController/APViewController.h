@@ -14,10 +14,17 @@
 {
     @private
 	id<APModel> _model;
+	UIView *_coverView;
 }
 
 @property (nonatomic, retain) id<APModel> model;
 
 - (void)createModel;
+
+- (void)reloadIfNeeded;
+
+- (void)showLoading;
+- (void)showError:(NSError*)error;
+- (void)hideCoverView;
 
 @end
