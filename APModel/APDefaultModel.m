@@ -45,7 +45,14 @@
 
 - (void)didFailLoadWithError:(NSError*)error
 {
-	[_delegates performSelectorOnMainThread:@selector(model:didFailLoadWithError:) withObjects:self, error, nil];
+	if ( error )
+	{
+		[_delegates performSelectorOnMainThread:@selector(model:didFailLoadWithError:) withObjects:self, error, nil];
+	}
+	else
+	{
+		[_delegates performSelectorOnMainThread:@selector(model:didFailLoadWithError:) withObjects:self, [NSNull null], nil];
+	}
 }
 
 #pragma mark -

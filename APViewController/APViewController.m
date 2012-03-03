@@ -78,6 +78,70 @@
 
 @end
 
+@interface APErrorView : UIView
+{
+	@private
+    UILabel *_errorLabel;
+}
+
+@property (nonatomic, readonly) UILabel *errorLabel;
+
+- (id)initWithError:(NSError*)error;
+
+@end
+
+@implementation APErrorView
+
+@synthesize errorLabel = _errorLabel;
+
+- (id)initWithError:(NSError*)error
+{
+	if ( (self = [super init]) )
+	{
+		_errorLabel = [[UILabel alloc] init];
+		_errorLabel.font = [UIFont systemFontOfSize:16.f];
+		_errorLabel.textColor = [UIColor grayColor];
+		if ( error && ![error isKindOfClass:[NSNull class]] )
+		{
+			_errorLabel.text = [error localizedDescription];
+		}
+		else
+		{
+			_errorLabel.text = NSLocalizedString(@"An unexpected error occured!", nil);
+		}
+		_errorLabel.backgroundColor = [UIColor clearColor];
+		[self addSubview:_errorLabel];
+		
+		self.backgroundColor = [UIColor whiteColor];
+	}
+	return self;
+}
+
+- (void)dealloc
+{
+	[_errorLabel release];
+	
+	[super dealloc];
+}
+
+- (void)layoutSubviews
+{
+	[super layoutSubviews];
+	
+	CGRect frame = self.bounds;
+	CGSize labelSize = [_errorLabel.text sizeWithFont:_errorLabel.font];
+	
+	CGFloat totalWidth = labelSize.width;
+	
+	CGRect labelFrame = CGRectZero;
+	labelFrame.size = labelSize;
+	labelFrame.origin.x = floorf((frame.size.width-totalWidth)/2);
+	labelFrame.origin.y = floorf((frame.size.height-labelSize.height)/2.f);
+	_errorLabel.frame = labelFrame;
+}
+
+@end
+
 @implementation APViewController
 
 @synthesize model = _model;
@@ -158,10 +222,9 @@
 - (void)showError:(NSError*)error
 {
 	[self hideCoverView];
-	_coverView = [[APLoadingView alloc] init];
+	_coverView = [[APErrorView alloc] initWithError:error];
 	_coverView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
 	_coverView.frame = self.view.bounds;
-	[(APLoadingView*)_coverView loadingLabel].text = @"error";
 	[self.view addSubview:_coverView];
 }
 
@@ -190,7 +253,7 @@
 
 - (void)model:(id<APModel>)model didFailLoadWithError:(NSError*)error
 {
-	[self showError:nil];
+	[self showError:error];
 }
 
 @end
