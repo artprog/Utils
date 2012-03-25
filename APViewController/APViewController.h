@@ -27,4 +27,8 @@
 - (void)showError:(NSError*)error;
 - (void)hideCoverView;
 
+- (UIView*)viewForError:(NSError*)error;
+
+- (CGRect)frameForCoverView;
+
 @end

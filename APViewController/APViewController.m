@@ -9,6 +9,7 @@
 #import "APViewController.h"
 #import "APModel.h"
 #import "APDefaultModel.h"
+#import "APErrorView.h"
 
 @interface APLoadingView : UIView
 {
@@ -74,70 +75,6 @@
 	labelFrame.origin.x = indicatorFrame.origin.x+indicatorFrame.size.width+8.f;
 	labelFrame.origin.y = floorf((frame.size.height-labelSize.height)/2.f);
 	_loadingLabel.frame = labelFrame;
-}
-
-@end
-
-@interface APErrorView : UIView
-{
-	@private
-    UILabel *_errorLabel;
-}
-
-@property (nonatomic, readonly) UILabel *errorLabel;
-
-- (id)initWithError:(NSError*)error;
-
-@end
-
-@implementation APErrorView
-
-@synthesize errorLabel = _errorLabel;
-
-- (id)initWithError:(NSError*)error
-{
-	if ( (self = [super init]) )
-	{
-		_errorLabel = [[UILabel alloc] init];
-		_errorLabel.font = [UIFont systemFontOfSize:16.f];
-		_errorLabel.textColor = [UIColor grayColor];
-		if ( error && ![error isKindOfClass:[NSNull class]] )
-		{
-			_errorLabel.text = [error localizedDescription];
-		}
-		else
-		{
-			_errorLabel.text = NSLocalizedString(@"An unexpected error occured!", nil);
-		}
-		_errorLabel.backgroundColor = [UIColor clearColor];
-		[self addSubview:_errorLabel];
-		
-		self.backgroundColor = [UIColor whiteColor];
-	}
-	return self;
-}
-
-- (void)dealloc
-{
-	[_errorLabel release];
-	
-	[super dealloc];
-}
-
-- (void)layoutSubviews
-{
-	[super layoutSubviews];
-	
-	CGRect frame = self.bounds;
-	CGSize labelSize = [_errorLabel.text sizeWithFont:_errorLabel.font];
-	
-	CGFloat totalWidth = labelSize.width;
-	
-	CGRect labelFrame = CGRectZero;
-	labelFrame.size = labelSize;
-	labelFrame.origin.x = floorf((frame.size.width-totalWidth)/2);
-	labelFrame.origin.y = floorf((frame.size.height-labelSize.height)/2.f);
-	_errorLabel.frame = labelFrame;
 }
 
 @end
@@ -215,16 +152,15 @@
 	[self hideCoverView];
 	_coverView = [[APLoadingView alloc] init];
 	_coverView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
-	_coverView.frame = self.view.bounds;
+	_coverView.frame = [self frameForCoverView];
 	[self.view addSubview:_coverView];
 }
 
 - (void)showError:(NSError*)error
 {
 	[self hideCoverView];
-	_coverView = [[APErrorView alloc] initWithError:error];
-	_coverView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
-	_coverView.frame = self.view.bounds;
+	_coverView = [[self viewForError:error] retain];
+	_coverView.frame = [self frameForCoverView];
 	[self.view addSubview:_coverView];
 }
 
@@ -232,6 +168,18 @@
 {
 	[_coverView removeFromSuperview];
 	RELEASE(_coverView);
+}
+	
+- (UIView*)viewForError:(NSError*)error
+{
+	UIView *view = [[[APErrorView alloc] initWithError:error] autorelease];
+	view.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+	return view;
+}
+
+- (CGRect)frameForCoverView
+{
+	return self.view.bounds;
 }
 
 #pragma mark -
