@@ -14,4 +14,7 @@
 - (void)performSelectorOnMainThread:(SEL)selector withObjects:(id)firstObj, ...;
 - (void)performSelectorOnMainThread:(SEL)selector withContext:(id)context waitUntilDone:(BOOL)waitUntilDone;
 
+- (void)performSelectorInBackground:(SEL)selector withObjects:(id)firstObj, ...;
+- (void)performSelectorInBackground:(SEL)selector withContext:(id)context;
+
 @end

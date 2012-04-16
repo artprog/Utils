@@ -101,4 +101,28 @@
 	[self performSelectorOnMainThread:selector withContext:args waitUntilDone:YES];
 }
 
+- (void)performSelectorInBackground:(SEL)selector withContext:(id)context
+{
+	NSInvocation *theInvocation = [self invocationFromSelector:selector context:context];
+	[theInvocation performSelectorInBackground:@selector(invoke) withObject:nil];
+}
+
+- (void)performSelectorInBackground:(SEL)selector withObjects:(id)firstObj, ...
+{
+	id currentObject;
+	va_list argList;
+	NSMutableArray *args = [NSMutableArray array];
+	if ( firstObj )
+	{
+		[args addObject:firstObj];
+		va_start(argList, firstObj);
+		while ( (currentObject = va_arg(argList, id)) )
+		{
+			[args addObject:currentObject];
+		}
+		va_end(argList);
+	}
+	[self performSelectorInBackground:selector withContext:args];
+}
+
 @end
